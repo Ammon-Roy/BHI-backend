@@ -32,7 +32,7 @@ def create_all():
             print("Super Admin not found! Creating foundation-admin@devpipeline user...")
             first_name = 'Super'
             last_name = 'Admin'
-            email = 'foundation-admin@devpipeline.com'
+            email = 'bhi-admin@devpipeline.com'
             newpw = ''
             while newpw == '' or newpw is None:
                 newpw = input(' Enter a password for Super Admin:')
@@ -71,7 +71,7 @@ def create_app(config_file=None):
    app = Flask(__name__)
 #  TODO: database url needs to be in env variable
    database_host = "127.0.0.1:5432"
-   database_name = "foundation"
+   database_name = "bhi"
    app.config['SQLALCHEMY_DATABASE_URI'] = f'postgres://{database_host}/{database_name}'
    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
    
