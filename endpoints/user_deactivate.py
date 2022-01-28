@@ -17,7 +17,7 @@ def user_deactivate(req:flask.Request, user_id, auth_info) -> flask.Response:
     if auth_info.user.role == 'super-admin':
         user_data = db.session.query(AppUser).filter(AppUser.user_id == user_id).first()
     else:    
-        user_data = db.session.query(AppUser).filter(AppUser.user_id == user_id).filter(AppUser.org_id == auth_info.user.org_id).first()
+        user_data = db.session.query(AppUser).filter(AppUser.user_id == user_id).first()
     
     if user_data:
         user_data.active = False

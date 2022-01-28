@@ -14,7 +14,7 @@ def user_delete(req:flask.Request, user_id, auth_info) -> flask.Response:
         return jsonify("Forbidden: User cannot delete themselves"), 403
 
     user_data = db.session.query(AppUser).filter(AppUser.user_id == user_id).first()
-    if auth_info.user.role == 'user' or (auth_info.user.role == 'admin' and auth_info.user.org_id != user_data.org_id):
+    if auth_info.user.role == 'user' or auth_info.user.role == 'admin':
         return jsonify("Unauthorized"), 403
     
     if user_data:

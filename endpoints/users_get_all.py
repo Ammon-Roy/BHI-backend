@@ -9,7 +9,7 @@ def users_get_all(req:flask.Request, auth_info) -> flask.Response:
     all_users = []
 
     if auth_info.user.role != 'super-admin':
-        all_users = db.session.query(AppUser).filter(AppUser.org_id == auth_info.user.org_id).order_by(AppUser.last_name.asc()).order_by(AppUser.first_name.asc()).all()
+        all_users = db.session.query(AppUser).order_by(AppUser.last_name.asc()).order_by(AppUser.first_name.asc()).all()
     else:
         all_users = db.session.query(AppUser).order_by(AppUser.last_name.asc()).order_by(AppUser.first_name.asc()).all()
     

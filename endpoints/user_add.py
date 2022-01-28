@@ -1,7 +1,6 @@
 from flask import jsonify
 import flask
 from db import db
-from models.organizations import Organization, organization_schema
 from models.app_users import AppUser, users_schema
 from lib.authenticate import authenticate_return_auth
 from datetime import datetime
@@ -18,7 +17,6 @@ def user_add(req:flask.Request, bcrypt, auth_info) -> flask.Response:
     password = post_data.get('password')
     phone = post_data.get('phone')
     active = post_data.get('active')
-    org_id = post_data.get('org_id')
     created_date = datetime.now()
     role = post_data.get('role')
     print(role)
@@ -28,19 +26,13 @@ def user_add(req:flask.Request, bcrypt, auth_info) -> flask.Response:
         if auth_info.user.role != 'super-admin':
             if role == 'super-admin':
                 role = 'user'
-            org_id = auth_info.user.org_id
         
-        organization = db.session.query(Organization).filter(Organization.org_id == org_id).first()
-        if not organization:
-            return jsonify(f"Unable to add User. Organization with id {org_id} not found"), 404
-        if not organization.active:
-            return jsonify(f"Unable to add User. Organization is inactive."), 403
         if active == None:
             active = True
 
         hashed_password = bcrypt.generate_password_hash(password).decode("utf8")
         stripped_phone = strip_phone(phone)
-        record = AppUser(first_name, last_name, email, hashed_password, stripped_phone, created_date, org_id, role, active)
+        record = AppUser(first_name, last_name, email, hashed_password, stripped_phone, created_date, role, active)
 
         db.session.add(record)
         db.session.commit()

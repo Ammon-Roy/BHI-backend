@@ -12,7 +12,7 @@ def user_update(req:flask.Request, auth_info) -> flask.Response:
     user_id = post_data.get("user_id")
     if user_id == None:
         return jsonify("ERROR: user_id missing"), 400
-    org_id = post_data.get("org_id")
+
     first_name = post_data.get("first_name")
     last_name = post_data.get('last_name')
     email = post_data.get('email')
@@ -27,14 +27,12 @@ def user_update(req:flask.Request, auth_info) -> flask.Response:
         if auth_info.user.role == 'super-admin':
             user_data = db.session.query(AppUser).filter(AppUser.user_id == user_id).first()
         elif auth_info.user.role == 'admin':
-            user_data = db.session.query(AppUser).filter(AppUser.user_id == user_id).filter(AppUser.org_id == auth_info.user.org_id).first()
+            user_data = db.session.query(AppUser).filter(AppUser.user_id == user_id).first()
         elif auth_info.user.role == 'user' and str(user_id) == str(auth_info.user.user_id):
             user_data = db.session.query(AppUser).filter(AppUser.user_id == auth_info.user.user_id).first()
         
         if user_data:
             user_data.user_id = user_id
-            if org_id:
-                user_data.org_id = org_id
             if first_name is not None:
                 user_data.first_name = first_name
             if last_name is not None:
@@ -45,10 +43,6 @@ def user_update(req:flask.Request, auth_info) -> flask.Response:
                 user_data.phone = strip_phone(phone)
             if role is not None:
                 if auth_info.user.role == 'admin' and role != 'super-admin':
-                    if role == 'user':
-                        admins_in_org = db.session.query(AppUser).filter(AppUser.org_id == auth_info.user.org_id).all()
-                        if not admins_in_org or len(admins_in_org) <= 1:
-                            return jsonify("Cannot downgrade role of last admin in organization"), 403
                     user_data.role = role
                 if auth_info.user.role == 'super-admin':
                     user_data.role = role

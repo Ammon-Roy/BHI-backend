@@ -1,7 +1,6 @@
 from flask import jsonify
 import flask
 from db import db
-from models.organizations import Organization, organization_schema
 from models.app_users import AppUser, user_schema
 from models.auth_tokens import AuthToken, auth_token_schema
 from lib.authenticate import authenticate_return_auth
@@ -25,9 +24,7 @@ def auth_token_add(req:flask.Request, bcrypt) -> flask.Response:
             .filter(AppUser.active).first()
 
         if user_data:
-            if user_data.organization.active == False:
-                return jsonify("Your account has been deactivated. Please contact your account executive."), 403
-
+            
             is_password_valid = bcrypt.check_password_hash(user_data.password, password)
             if is_password_valid == False:
                 return jsonify("Invalid email/password"), 401
@@ -37,12 +34,8 @@ def auth_token_add(req:flask.Request, bcrypt) -> flask.Response:
                 auth_data = AuthToken(user_data.user_id, expiration_datetime)
                 db.session.add(auth_data)
             else:
-                # auth_record = db.session.query(AuthToken).filter(AuthToken.auth_token == auth_token).filter(AuthToken.expiration > datetime.utcnow()).first()
                 print(auth_data.expiration)
-                # 2021-05-11 05:11:13.899410
-                # old_expiration_datetime = datetime.strptime(auth_data.expiration, '%Y-%m-%d %H:%M:%S.%f')
                 if now_datetime < auth_data.expiration:
-                    # Auth Expired
                     db.session.delete(auth_data)
                     auth_data = AuthToken(user_data.user_id, expiration_datetime)
                     db.session.add(auth_data)

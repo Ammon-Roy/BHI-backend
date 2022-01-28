@@ -8,7 +8,6 @@ import uuid
 from db import db, init_db
 from flask_marshmallow import Marshmallow
 
-from models.organizations import organization_schema, organizations_schema, Organization, OrganizationSchema
 from models.app_users import user_schema, users_schema, AppUser, AppUserSchema
 from models.auth_tokens import auth_token_schema, AuthToken, AuthTokenSchema
 
@@ -25,28 +24,6 @@ import endpoints
 def create_all():
     with app.app_context():
         db.create_all()
-
-        # Create DevPipeline Organization
-        print("Querying for DevPipeline organization...")
-        org_data = db.session.query(Organization).filter(Organization.name == "DevPipeline").first()
-        if org_data == None:
-            print("DevPipeline organization not found. Creating DevPipeline Organization in database...")
-            name = 'DevPipeline'
-            address = '518 East 800 North, Suite C'
-            city = 'Orem'
-            state = 'Utah'
-            zip_code = '84097'
-            phone = '3853090807'
-            active = True
-            created_date = datetime.now()
-            
-            org_data = Organization(name, address, city, state, zip_code, phone, created_date, active)
-
-            db.session.add(org_data)
-            db.session.commit()
-        else:
-            print("DevPipeline Organization found!")
-        
         
         # Create default super-admin user
         print("Querying for Super Admin user...")
@@ -64,12 +41,12 @@ def create_all():
             password = newpw
             phone = '3853090807'
             active = True
-            org_id = org_data.org_id
+
             created_date = datetime.now()
             role = 'super-admin'
             
             hashed_password = bcrypt.generate_password_hash(password).decode("utf8")
-            record = AppUser(first_name, last_name, email, hashed_password, phone, created_date, org_id, role, active)
+            record = AppUser(first_name, last_name, email, hashed_password, phone, created_date, role, active)
 
             db.session.add(record)
             db.session.commit()
@@ -162,37 +139,7 @@ def validate_auth_token(auth_token):
     return auth_record
 
 
-@app.route("/organization/add", methods=["POST"])
-def organization_add() -> Response:
-    return endpoints.organization_add(request)
 
-@app.route("/organization/update", methods=["POST"])
-def organization_update() -> Response:
-    return endpoints.organization_update(request)
-
-@app.route("/organization/get")
-def organizations_get_all() -> Response:
-    return endpoints.organizations_get(request)
-
-@app.route("/organization/get/<org_id>")
-def organization_get_by_id(org_id) -> Response:
-    return endpoints.organization_get_by_id(request, org_id)
-
-@app.route("/organization/delete/<org_id>", methods=["DELETE"])
-def organization_delete_by_id(org_id):
-    return endpoints.organization_delete_by_id(request, org_id)
-
-@app.route("/organization/activate/<org_id>", methods=["PUT"])
-def organization_activate_by_id(org_id):
-    return endpoints.organization_activate_by_id(request, org_id)
-
-@app.route("/organization/deactivate/<org_id>", methods=["PUT"])
-def organization_deactivate_by_id(org_id):
-    return endpoints.organization_deactivate_by_id(request, org_id)
-    
-@app.route("/organization/search/<search_term>")
-def organization_get_by_search(search_term, internal_call=False, p_auth_info=None):
-     return endpoints.organization_get_by_search(request, search_term, internal_call, p_auth_info)
 
 @app.route("/search/<search_term>")
 def get_objects_by_search(search_term):
@@ -219,9 +166,6 @@ def user_get_by_id(user_id):
 def user_get_from_auth_token():
     return endpoints.user_get_from_auth_token(request)
 
-@app.route("/user/get/organization/<org_id>", methods=["GET"])
-def users_get_by_org_id(org_id):
-    return endpoints.users_get_by_org_id(request, org_id)
 
 @app.route("/user/delete/<user_id>", methods=["DELETE"])
 def user_delete(user_id):
